@@ -15,7 +15,6 @@ package com.github.bartimaeusnek.bartworks.system.material;
 
 import static com.github.bartimaeusnek.bartworks.util.BW_Util.subscriptNumbers;
 import static com.github.bartimaeusnek.bartworks.util.BW_Util.superscriptNumbers;
-import static gregtech.api.enums.Mods.BetterLoadingScreen;
 import static gregtech.api.enums.Mods.Forestry;
 import static gregtech.api.enums.OrePrefixes.block;
 import static gregtech.api.enums.OrePrefixes.bolt;
@@ -118,7 +117,6 @@ import com.github.bartimaeusnek.bartworks.util.BW_ColorUtil;
 import com.github.bartimaeusnek.bartworks.util.EnumUtils;
 import com.github.bartimaeusnek.bartworks.util.Pair;
 import com.github.bartimaeusnek.bartworks.util.log.DebugLog;
-import com.github.bartimaeusnek.crossmod.cls.CLSCompat;
 import com.google.common.collect.HashBiMap;
 
 import cpw.mods.fml.client.registry.RenderingRegistry;
@@ -1493,7 +1491,6 @@ public class WerkstoffLoader {
             DebugLog.log("Loading Recipes" + (System.nanoTime() - timepre));
             Integer[] clsArr = {};
             int size = 0;
-            if (BetterLoadingScreen.isModLoaded()) clsArr = CLSCompat.initCls();
 
             IWerkstoffRunnable[] werkstoffRunnables = { new ToolLoader(), new DustLoader(), new GemLoader(),
                     new SimpleMetalLoader(), new CasingLoader(), new AspectLoader(), new OreLoader(),
@@ -1511,7 +1508,6 @@ public class WerkstoffLoader {
                     progressBar.step("");
                     continue;
                 }
-                if (BetterLoadingScreen.isModLoaded()) size = CLSCompat.invokeStepSize(werkstoff, clsArr, size);
                 DebugLog.log("Werkstoff: " + werkstoff.getDefaultName() + " " + (System.nanoTime() - timepreone));
                 for (IWerkstoffRunnable runnable : werkstoffRunnables) {
                     String loaderName = runnable.getClass().getSimpleName();
@@ -1524,10 +1520,6 @@ public class WerkstoffLoader {
             }
             DebugLog.log("Loading New Circuits" + " " + (System.nanoTime() - timepreone));
             BW_CircuitsLoader.initNewCircuits();
-
-            if (BetterLoadingScreen.isModLoaded()) {
-                CLSCompat.disableCls();
-            }
 
             progressBar.step("Load Additional Recipes");
             AdditionalRecipes.run();
