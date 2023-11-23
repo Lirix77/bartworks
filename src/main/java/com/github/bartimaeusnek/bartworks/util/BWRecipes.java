@@ -49,6 +49,8 @@ import com.gtnewhorizons.modularui.api.screen.ModularWindow;
 import com.gtnewhorizons.modularui.common.widget.DrawableWidget;
 import com.gtnewhorizons.modularui.common.widget.ProgressBar;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import gregtech.api.enums.GT_Values;
 import gregtech.api.enums.Materials;
 import gregtech.api.enums.OrePrefixes;
@@ -801,6 +803,7 @@ public class BWRecipes {
         }
 
         @Override
+        @SideOnly(Side.CLIENT)
         protected List<String> handleNEIItemInputTooltip(List<String> currentTip,
                 GT_NEI_DefaultHandler.FixedPositionedStack pStack) {
             if (pStack.isFluid()) {
@@ -811,6 +814,7 @@ public class BWRecipes {
         }
 
         @Override
+        @SideOnly(Side.CLIENT)
         protected List<String> handleNEIItemOutputTooltip(List<String> currentTip,
                 GT_NEI_DefaultHandler.FixedPositionedStack pStack) {
             if (pStack.isFluid()) {
@@ -821,15 +825,18 @@ public class BWRecipes {
         }
 
         @Override
+        @SideOnly(Side.CLIENT)
         protected void drawNEIOverlayForInput(GT_NEI_DefaultHandler.FixedPositionedStack stack) {
             drawFluidOverlay(stack);
         }
 
         @Override
+        @SideOnly(Side.CLIENT)
         protected void drawNEIOverlayForOutput(GT_NEI_DefaultHandler.FixedPositionedStack stack) {
             drawFluidOverlay(stack);
         }
 
+        @SideOnly(Side.CLIENT)
         private void drawFluidOverlay(GT_NEI_DefaultHandler.FixedPositionedStack stack) {
             if (stack.isFluid()) {
                 drawNEIOverlayText(
