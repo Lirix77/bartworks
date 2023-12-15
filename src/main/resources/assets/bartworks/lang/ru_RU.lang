@@ -1,0 +1,189 @@
+itemGroup.GT2C=Грегтек 2 Совместимость
+item.GT_Rockcutter_Item_LV.name=Камнерез LV
+item.GT_Rockcutter_Item_MV.name=Камнерез MV
+item.GT_Rockcutter_Item_HV.name=Камнерез V
+item.GT_Teslastaff_Item.name=Посох Теслы
+BW_ItemBlocks.0.name=Гравированная лазуритовая ячейка
+BW_ItemBlocks.1.name=Покрытая лазуритовая ячейка
+GT_LESU_CASING.0.name=LESU корпус
+
+GT5U.gui.text.no_imprint=Отсутствуют выходные данные
+GT5U.gui.text.wrong_sievert_exactly=§7Неправильный зиверт. Требуется именно: %s §7Зв
+GT5U.gui.text.wrong_sievert_min=§7Неправильный зиверт. Требует, по крайней мере: %s §7Зв
+
+itemGroup.bartworks=BartWorks Межвременный
+BW_Machinery_Casings.0.name=Никель-цинко ферритовый блок
+BW_Machinery_Casings.1.name=Трансформаторно-обмоточный блок
+item.BW_PaperRotor.name=Примитивный бумажный ротор (только ветер)
+item.BW_LeatherRotor.name=Примитивный кожаный ротор (только ветер)
+item.BW_WoolRotor.name=Примитивный шерстяной ротор (только ветер)
+item.BW_CombinedRotor.name=Комбинированный примитивный ротор (только ветер)
+tile.BWRotorBlock.0.name=Примитивная кинетическая коробка передач
+item.grindstone_top.name=Верхняя часть точильного камня
+item.grindstone_bottom.name=Нижняя часть точильного камня
+item.completed_grindstone.name=Точильный камень
+item.rotors.leatherParts.name=Деревянная рама с кожаной обивкой
+item.rotors.woolParts.name=Деревянная рама, покрытая шерстью
+item.rotors.paperParts.name=Деревянная рама, покрытая бумагой
+item.rotors.combinedParts.name=Деревянная рама, покрытая несколькими материалами
+item.BW_SimpleWindMeter.name=Простой измеритель ветра
+tile.BWHeatedWaterPump.0.name=Простой водяной насос Стирлинга
+item.BWrawtube.name=Удлиненная стеклянная трубка
+item.BWmotor.name=Простой двигатель Стирлинга
+item.BWstove.name=Простая печь с подогревом
+
+itemGroup.BioTab=BartWorks Биоинженерия
+filled.item.petriDish.name=Чашка Петри с культурой бактерий
+item.petriDish.name=Стерилизованная чашка Петри
+item.DNASampleFlask.name=Колба для образцов ДНК
+item.PlasmidCell.name=Колба для образцов плазмиды
+item.DetergentPowder.name=Стиральный порошок
+item.Agarose.name=Агароза
+item.IncubationModule.name=Инкубационный модуль
+item.Cells.name=Бактериальные клетки
+item.PlasmaMembrane.name=Плазматическая мембрана
+labModule.item.DNAExtractionModule.name=Модуль экстракции ДНК
+labModule.item.PCRThermoclyclingModule.name=Модуль термоцикла ПЦР
+labModule.item.PlasmidSynthesisModule.name=Модуль плазмидного синтеза
+labModule.item.TransformationModule.name=Модуль трансформации
+labModule.item.ClonalCellularSynthesisModule.name=Модуль клонального клеточного синтеза
+BW_GlasBlocks.0.name=Боросиликатный стеклянный блок
+BW_GlasBlocks.1.name=Блок из боросиликатного стекла, армированный титаном
+BW_GlasBlocks.2.name=Блок из боросиликатного стекла, армированный вольфрамовой сталью
+BW_GlasBlocks.3.name=Блок из боросиликатного стекла, армированного палладием и родием
+BW_GlasBlocks.4.name=Блок из боросиликатного стекла, армированный иридием
+BW_GlasBlocks.5.name=Боросиликатный стеклянный блок, армированный осмием
+BW_GlasBlocks.6.name=Цветной блок из боросиликатного стекла (красный)
+BW_GlasBlocks.7.name=Цветной блок из боросиликатного стекла (зеленый)
+BW_GlasBlocks.8.name=Цветной боросиликатный стеклянный блок (фиолетовый)
+BW_GlasBlocks.9.name=Цветной блок из боросиликатного стекла (желтый)
+BW_GlasBlocks.10.name=Цветной боросиликатный стеклянный блок (светло-зеленый)
+BW_GlasBlocks.11.name=Цветной блок из боросиликатного стекла (коричневый)
+BW_GlasBlocks.12.name=Торий-иттриевый стеклянный блок
+BW_GlasBlocks.13.name=Боросиликатный стеклянный блок, армированный нейтронием
+BW_GlasBlocks.14.name=Блок боросиликатного стекла, армированный космическим нейтронием
+BW_GlasBlocks.15.name=Боросиликатный стеклянный блок, армированный бесконечностью
+BW_GlasBlocks2.0.name=Боросиликатный стеклянный блок, армированный пространственно-трансцендентым металлом
+
+tooltip.glas.0.name=Уровень стекла:
+tooltip.LESU.0.name=Максимальная емкость!
+tooltip.LESU.1.name=Несколько контроллеров!
+
+tooltip.windmeter.0.name=Простой ветрометр для выбора места для ветряной мельницы.
+tooltip.windmeter.1.name=Осталось использований:
+tooltip.windmeter.2.name=несуществующий
+tooltip.windmeter.3.name=довольно низкий
+tooltip.windmeter.4.name=обычный
+tooltip.windmeter.5.name=довольно сильный
+tooltip.windmeter.6.name=очень сильный
+tooltip.windmeter.7.name=слишком сильный
+tooltip.windmeter.8.name=Ветер здесь, кажется,
+tooltip.rotor.0.name=Диаметр:
+tooltip.rotor.1.name=Прочность:
+tooltip.rotor.2.name=Эффективность:
+tooltip.rotor.3.name=Скорость:
+tooltip.rotor.4.name=Выход:
+tooltip.cp.0.name=Есть ли схема внутри?
+
+tooltip.bw.0.name=Добавлено автором
+tooltip.bw.1.name=Добавлено автором bartimaeusnek через 
+tooltip.bw.yes.name=Да
+tooltip.bw.no.name=Нет
+tooltip.bw.tier.name=Уроовень:
+tooltip.bw.kg.0.name=кг
+tooltip.bw.kg.1.name=кг
+tooltip.bw.empty.name=Пусто
+tooltip.bw.via.name=Добавлено автором %s§7 через §2BartWorks
+tooltip.bw.mb_via.name=%s§7 через §2BartWorks
+
+tooltip.teslastaff.0.name=Никакой гарантии!
+tooltip.labmodule.0.name=Модуль, используемый для изменения режима работы Биолаборатории.
+tooltip.labparts.0.name=Пустая стерилизованная чашка Петри.
+tooltip.labparts.1.name=Пустая колба для ДНК.
+tooltip.labparts.2.name=Пустая плазмидная клетка.
+tooltip.labparts.3.name=Специальный стиральный порошок для биоинженерии.
+tooltip.labparts.4.name=Порошок для разделения ДНК методом электрофореза.
+tooltip.labparts.5.name=Чашка Петри, содержащая:
+tooltip.labparts.6.name=Это слабая культура, ее нельзя разводить в бактериальном чане!
+tooltip.labparts.7.name=Флакон ДНК, содержащий:
+tooltip.labparts.8.name=Плазмидная клетка, содержащая:
+
+tooltip.tile.waterpump.0.name=Производит
+tooltip.tile.waterpump.1.name=л/с Воды при заправке. Вызывает %d загрязнений в секунду.
+tooltip.tile.waterpump.2.name=Необходимо разместить на Земле.
+
+tooltip.tile.mbf.0.name=Блок контроллера для мега доменной печи ;Размер (ШxВxГ): 15x20x15 (полый);Контроллер: 3-й слой, посередине в центре;Внутренние нагревательные катушка 13x18x13 (полые);Внешние 15x18x15 из боросиликатного стекла;Уровень стекла ограничивает уровень ввода энергии;1+ вход Люк/шина (любой корпус); 1+ выходной люк/шина (любой корпус); 1+ энерголюк (любой корпус); 1 люк для технического обслуживания (любой корпус); 13x13 выхлопных люков (вверху посередине); жаропрочные корпуса для внешнего слоя 15х15 (Слой 20);1+ Выходной люк для вывода CO2/CO/SO2 (опционально, любой корпус верхнего слоя); Восстановление масштабируется в зависимости от уровня выхлопного люка; Жаропрочных корпусов для основания; Каждые 900 K в течение мин. теплоемкости дает 5% ускорения (мультипликативно); Каждые 1800К за мин. теплоемкости позволяет выполнить один улучшенный разгон; Модернизированные разгоны сокращают время рецепта до 25% и увеличивают EU/т до 400%; Вызывает максимум загрязнений
+tooltip.tile.mbf.1.name=Загрязнений в секунду
+tooltip.tile.windmill.0.name=Примитивная дробилка, работающая на кинетической энергии.;Размер (ШxВxД): 7x12x7;Слой 1: Кирпичи 7x7, углы - воздух, контроллер спереди по центру.;Слой 2-5: затвердевшая глина 5x5, углы - воздух, может содержать одну дверь, ;пустой, стена должна содержать хотя бы один раздатчик(0_0);Слой 6: деревянные доски 5x5. Углы заполнены, полые.;Слой 7: деревянные доски 7х7. Углы воздушные, пустотелые.;Слой 8: Деревянные доски 7х7. Углы воздушные, полые; спереди по центру должен быть примитивный кинетический вал; слой 9: деревянные доски 7x7. Углы воздушные, полые.;Слой 10: Доски 5х5. Углы заполнены, полые.;Слой 11: деревянные доски 3x3. Углы заполнены, полые.;Слой 12: деревянная доска 1x1.;Для работы требуется ротор ветряной мельницы в шахте;Вводные элементы в контроллере;Выходные элементы появятся в раздатчиках;В регионах с большим ветром (например, IC2 ветряки) это происходит быстрее.
+tooltip.tile.lesu.0.name=Блок контроллера для L.E.S.U. в стиле GT2;Размер: ЛЮБОЙ
+tooltip.tile.lesu.1.name=Хранение на корпусе LESU:
+tooltip.tile.lesu.2.name=Выход EU: количество корпусов LESU; Вход EU: следующий уровень напряжения для выхода EU; Входной/выходной усилитель можно настроить с помощью 4 схем в графическом интерфейсе; На стороне выхода отмечена точка.
+tooltip.tile.lesu.3.name=Разрешен только один контроллер, без совместного использования стены!
+tooltip.tile.manualtravo.0.name=Блок контроллера для ручного трафо;Работает в 4 различных режимах:;Режим 1: Схема 0 в контроллере: Прямое повышение; Режим 2: Схема 1 в контроллере: Прямое понижение;Режим 3: Схема 2 в контроллере: Переходное повышение; Режим 4: Схема 3 в контроллере: Отвод-понижающий; Для прямых режимов: 3xHx3; Основание содержит как минимум 1 энергетический люк; 1 слой блоков трансформаторных обмоток для каждого преобразованного яруса; Середина блоков трансформаторных обмоток должна быть из никель-цинк ферритовых блоков; Верх содержит как минимум 1 люк для динамо-люка; Люк для обслуживания можно разместить где угодно; Режим с резьбой в данный момент отключен.
+tooltip.tile.tiereddsc.0.name=Напряжение:
+tooltip.tile.tiereddsc.1.name=Входной ток:
+tooltip.tile.tiereddsc.2.name=Выходной ток:
+tooltip.tile.tiereddsc.3.name=Емкость:
+tooltip.tile.diode.0.name=Простой диод, который позволит потоку энергии идти только в одном направлении.
+tooltip.tile.energydistributor.0.name=Разделяет силу тока на несколько сторон.
+tooltip.tile.biolab.0.name=Биолаборатория, многофункциональная биоинженерная станция
+tooltip.tile.radhatch.0.name=Камера для радиоактивных предметов для мультиблоков
+tooltip.tile.radhatch.1.name=Используйте отвертку, чтобы установить уровень сдерживания
+tooltip.tile.radhatch.2.name=Материал:
+tooltip.tile.radhatch.3.name=Зиверт:
+tooltip.tile.radhatch.4.name=Количество:
+tooltip.tile.radhatch.5.name=Время (в т/с/мин/ч) разложения (1 кг):
+tooltip.tile.radhatch.6.name=т
+tooltip.tile.radhatch.7.name=с
+tooltip.tile.radhatch.8.name=мин
+tooltip.tile.radhatch.9.name=ч
+tooltip.tile.radhatch.10.name=Осталось: %s s / %s s
+tooltip.tile.acidgen.0.name=Кислотный генератор
+tooltip.tile.acidgen.1.name=Создает энергию из химических энергетических потенциалов.
+nei.biovat.0.name=Требуемый уровень стекла:
+nei.biovat.1.name=Нужно именно
+nei.biovat.2.name=Нужно минимум
+nei.biovat.input.tooltip=Потребляется до 1,001x суммы, в зависимости от скорости вывода
+nei.biovat.output.tooltip=Выводит до 1,001x количества, в зависимости от количества жидкости, хранящейся в выходном люке
+
+tile.diode.name=Кабельный диод
+tile.energydistributor.name=Распределитель энергии
+tile.acidgenerator.name=Кислотный генератор
+tile.bw.mbf.name=Мега доменная печь
+tile.bw.mvf.name=Мега вакуумный морозильник
+tile.biolab.name=Биолаборатория
+tile.biovat.name=Бактериальный чан
+tile.radiohatch.name=Радио Люк
+tile.bw.windmill.name=Ветряная мельница
+tile.manutrafo.name=Ручное Трафо
+tile.BioFluidBlock.name=Блок биожидкости
+
+item.TRISOPellet.name=TRISO галька
+item.TRISOPelletBall.name=TRISO галечный шар
+item.BISOPelletBall.name=BISO галечный шар
+item.TRISOPelletCompound.name=TRISO смесь гальки
+item.BISOPelletCompound.name=BISO смесь гальки
+item.BurnedOutTRISOPelletBall.name=Сгоревший TRISO галечный шар
+item.BurnedOutTRISOPellet.name=Сгоревшая TRISO галька
+
+itemGroup.bartworksMetaMaterials=BartWorks' Метаматериалы
+
+planet.Ross128b=Ross128b
+moon.Ross128ba=Ross128ba
+star.Ross128=Ross128
+solarsystem.Ross128System=Ross128-Система
+
+itemGroup.bw.MetaItems.0=BartWorks предметы для ремонта схемы
+
+BW.infoData.BioVat.expectedProduction=Ожидаемое производство
+BW.infoData.BioVat.production=Производство
+
+BW.NEI.display.radhatch.0=Зиверт: %s Зв
+BW.NEI.display.radhatch.1=Масса: %s кг
+BW.NEI.display.radhatch.2=Время: %s с
+
+misc.BatchModeTextOn=Пакетные рецепты
+misc.BatchModeTextOff=Не группируйте рецепты
+
+tooltip.cal.imprintedWith=Отпечатано с:
+#Liquids
