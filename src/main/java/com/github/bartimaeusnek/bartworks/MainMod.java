@@ -19,13 +19,16 @@ import static gregtech.api.enums.GT_Values.VN;
 import static gregtech.api.enums.Mods.BartWorks;
 import static gregtech.api.enums.Mods.GTPlusPlus;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+import cpw.mods.fml.relauncher.FMLInjectionData;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 
+import net.minecraftforge.common.config.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -113,6 +116,7 @@ public final class MainMod {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent preinit) {
+        new ConfigHandler(new Configuration(new File(new File((File) FMLInjectionData.data()[6], "config"), "bartworks.cfg")));
         if (GTPlusPlus.isModLoaded()) {
             MainMod.LOGGER.info("Found GT++, continuing");
         }
