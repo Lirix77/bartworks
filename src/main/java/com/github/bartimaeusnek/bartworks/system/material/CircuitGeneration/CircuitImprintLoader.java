@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import com.github.bartimaeusnek.bartworks.util.BWRecipes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.item.crafting.IRecipe;
@@ -30,7 +31,6 @@ import net.minecraftforge.oredict.ShapedOreRecipe;
 
 import com.github.bartimaeusnek.bartworks.API.recipe.BWNBTDependantCraftingRecipe;
 import com.github.bartimaeusnek.bartworks.API.recipe.BartWorksRecipeMaps;
-import com.github.bartimaeusnek.bartworks.ASM.BWCoreStaticReplacementMethodes;
 import com.github.bartimaeusnek.bartworks.common.configs.ConfigHandler;
 import com.github.bartimaeusnek.bartworks.system.material.WerkstoffLoader;
 import com.github.bartimaeusnek.bartworks.util.BW_Util;
@@ -90,30 +90,30 @@ public class CircuitImprintLoader {
 
     private static void handleCircuitRecipeRebuilding(GT_Recipe circuitRecipe, HashSet<GT_Recipe> toRem,
             HashSet<GT_Recipe> toAdd) {
-        ItemStack[] outputs = circuitRecipe.mOutputs;
-        boolean isOrePass = isCircuitOreDict(outputs[0]);
-        String unlocalizedName = outputs[0].getUnlocalizedName();
-        if (isOrePass || unlocalizedName.contains("Circuit") || unlocalizedName.contains("circuit")) {
+        ItemStack output = circuitRecipe.mOutputs[0];
+        if (output == null) return;
+        boolean isOrePass = isCircuitOreDict(output);
+        String unlocalizedName = output.getUnlocalizedName();
+        if (unlocalizedName == null) return;
+        if (!isOrePass && !unlocalizedName.contains("Circuit") && !unlocalizedName.contains("circuit")) return;
 
-            CircuitImprintLoader.recipeTagMap
-                    .put(CircuitImprintLoader.getTagFromStack(outputs[0]), circuitRecipe.copy());
+        CircuitImprintLoader.recipeTagMap.put(CircuitImprintLoader.getTagFromStack(output), circuitRecipe.copy());
 
-            Fluid solderIndalloy = FluidRegistry.getFluid("molten.indalloy140") != null
-                    ? FluidRegistry.getFluid("molten.indalloy140")
-                    : FluidRegistry.getFluid("molten.solderingalloy");
+        Fluid solderIndalloy = FluidRegistry.getFluid("molten.indalloy140") != null
+            ? FluidRegistry.getFluid("molten.indalloy140")
+            : FluidRegistry.getFluid("molten.solderingalloy");
 
-            Fluid solderUEV = FluidRegistry.getFluid("molten.mutatedlivingsolder") != null
-                    ? FluidRegistry.getFluid("molten.mutatedlivingsolder")
-                    : FluidRegistry.getFluid("molten.solderingalloy");
+        Fluid solderUEV = FluidRegistry.getFluid("molten.mutatedlivingsolder") != null
+            ? FluidRegistry.getFluid("molten.mutatedlivingsolder")
+            : FluidRegistry.getFluid("molten.solderingalloy");
 
-            if (circuitRecipe.mFluidInputs[0].isFluidEqual(Materials.SolderingAlloy.getMolten(0))
-                    || circuitRecipe.mFluidInputs[0].isFluidEqual(new FluidStack(solderIndalloy, 0))
-                    || circuitRecipe.mFluidInputs[0].isFluidEqual(new FluidStack(solderUEV, 0))) {
-                GT_Recipe newRecipe = CircuitImprintLoader.reBuildRecipe(circuitRecipe);
-                if (newRecipe != null) BartWorksRecipeMaps.circuitAssemblyLineRecipes.addRecipe(newRecipe);
-                addCutoffRecipeToSets(toRem, toAdd, circuitRecipe);
-            } else if (circuitRecipe.mEUt > BW_Util.getTierVoltage(ConfigHandler.cutoffTier)) toRem.add(circuitRecipe);
-        }
+        if (circuitRecipe.mFluidInputs[0].isFluidEqual(Materials.SolderingAlloy.getMolten(0))
+            || circuitRecipe.mFluidInputs[0].isFluidEqual(new FluidStack(solderIndalloy, 0))
+            || circuitRecipe.mFluidInputs[0].isFluidEqual(new FluidStack(solderUEV, 0))) {
+            GT_Recipe newRecipe = CircuitImprintLoader.reBuildRecipe(circuitRecipe);
+            if (newRecipe != null) BartWorksRecipeMaps.circuitAssemblyLineRecipes.addRecipe(newRecipe);
+            addCutoffRecipeToSets(toRem, toAdd, circuitRecipe);
+        } else if (circuitRecipe.mEUt > BW_Util.getTierVoltage(ConfigHandler.cutoffTier)) toRem.add(circuitRecipe);
     }
 
     private static boolean isCircuitOreDict(ItemStack item) {
@@ -273,7 +273,7 @@ public class CircuitImprintLoader {
 
     private static void removeOldRecipesFromRegistries() {
         recipeWorldCache.forEach(CraftingManager.getInstance().getRecipeList()::remove);
-        BWCoreStaticReplacementMethodes.clearRecentlyUsedRecipes();
+        //BWCoreStaticReplacementMethodes.clearRecentlyUsedRecipes();
         RecipeMaps.slicerRecipes.getBackend().removeRecipes(gtrecipeWorldCache);
         recipeWorldCache.forEach(r -> {
             try {

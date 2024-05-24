@@ -17,8 +17,6 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 
-import com.github.bartimaeusnek.bartworks.ASM.BWCoreStaticReplacementMethodes;
-
 public class ClearCraftingCache extends CommandBase {
 
     @Override
@@ -33,7 +31,7 @@ public class ClearCraftingCache extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
-        BWCoreStaticReplacementMethodes.clearRecentlyUsedRecipes();
+        //BWCoreStaticReplacementMethodes.clearRecentlyUsedRecipes();
         sender.addChatMessage(new ChatComponentText("Recipe Cache cleared "));
     }
 }

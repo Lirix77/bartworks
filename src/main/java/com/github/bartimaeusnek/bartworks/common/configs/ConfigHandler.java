@@ -21,7 +21,6 @@ import java.util.Set;
 import net.minecraftforge.common.config.Configuration;
 
 import com.github.bartimaeusnek.bartworks.API.API_ConfigValues;
-import com.github.bartimaeusnek.bartworks.ASM.BWCoreTransformer;
 
 public class ConfigHandler {
 
@@ -239,16 +238,6 @@ public class ConfigHandler {
         API_ConfigValues.debugLog = ConfigHandler.c
                 .get("System", "Enable Debug Log", false, "Enables or Disables the debug log.").getBoolean(false);
 
-        for (int i = 0; i < BWCoreTransformer.CLASSESBEINGTRANSFORMED.length; i++)
-            BWCoreTransformer.shouldTransform[i] = ConfigHandler.c.get(
-                    "ASM fixes",
-                    BWCoreTransformer.DESCRIPTIONFORCONFIG[i] + " in class: "
-                            + BWCoreTransformer.CLASSESBEINGTRANSFORMED[i],
-                    true).getBoolean(true);
-
-        ConfigHandler.enabledPatches = new boolean[BWCoreTransformer.shouldTransform.length];
-        ConfigHandler.enabledPatches = Arrays
-                .copyOf(BWCoreTransformer.shouldTransform, BWCoreTransformer.shouldTransform.length);
         ConfigHandler.ross128BID = ConfigHandler.c
                 .get("CrossMod Interactions", "DimID - Ross128b", -64, "The Dim ID for Ross128b").getInt(-64);
         ConfigHandler.ross128BAID = ConfigHandler.c
