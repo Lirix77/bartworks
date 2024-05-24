@@ -52,9 +52,10 @@ import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.logic.ProcessingLogic;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch_Output;
+import gregtech.api.recipe.RecipeMap;
+import gregtech.api.recipe.RecipeMaps;
 import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GT_Multiblock_Tooltip_Builder;
-import gregtech.api.util.GT_Recipe;
 import gregtech.api.util.GT_Utility;
 import gregtech.common.tileentities.machines.GT_MetaTileEntity_Hatch_Output_ME;
 
@@ -246,8 +247,13 @@ public class GT_TileEntity_MegaDistillTower extends GT_TileEntity_MegaMultiBlock
     }
 
     @Override
-    public GT_Recipe.GT_Recipe_Map getRecipeMap() {
-        return GT_Recipe.GT_Recipe_Map.sDistillationRecipes;
+    public RecipeMap<?> getRecipeMap() {
+        return RecipeMaps.distillationTowerRecipes;
+    }
+
+    @Override
+    public int getRecipeCatalystPriority() {
+        return -1;
     }
 
     @Override
@@ -284,12 +290,17 @@ public class GT_TileEntity_MegaDistillTower extends GT_TileEntity_MegaMultiBlock
         if (!this.checkPiece(STRUCTURE_PIECE_BASE, 7, 0, 0)) return false;
 
         // check each layer
-        while (this.mHeight < 12 && this.checkPiece(STRUCTURE_PIECE_LAYER, 7, this.mHeight * 5, 0)
-                && !this.mTopLayerFound) {
+        while (this.mHeight < 12) {
+            if (!checkPiece(STRUCTURE_PIECE_LAYER, 7, mHeight * 5, 0)) {
+                return false;
+            }
             if (this.mOutputHatchesByLayer.size() < this.mHeight
                     || this.mOutputHatchesByLayer.get(this.mHeight - 1).isEmpty())
                 // layer without output hatch
                 return false;
+            if (mTopLayerFound) {
+                break;
+            }
             this.mTopState = -1;
             // not top
             this.mHeight++;
