@@ -15,8 +15,7 @@ package com.github.bartimaeusnek.bartworks.common.tileentities.multis;
 
 import static com.github.bartimaeusnek.bartworks.util.BW_Tooltip_Reference.ADDED_BY_BARTIMAEUSNEK_VIA_BARTWORKS;
 import static com.github.bartimaeusnek.bartworks.util.BW_Util.ofGlassTieredMixed;
-import static com.gtnewhorizon.structurelib.structure.StructureUtility.ofBlock;
-import static com.gtnewhorizon.structurelib.structure.StructureUtility.transpose;
+import static com.gtnewhorizon.structurelib.structure.StructureUtility.*;
 import static gregtech.api.enums.GT_HatchElement.Energy;
 import static gregtech.api.enums.GT_HatchElement.InputBus;
 import static gregtech.api.enums.GT_HatchElement.InputHatch;
@@ -27,12 +26,19 @@ import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_FRONT_ASSEMBLY_LINE
 import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_FRONT_ASSEMBLY_LINE_ACTIVE;
 import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_FRONT_ASSEMBLY_LINE_ACTIVE_GLOW;
 import static gregtech.api.enums.Textures.BlockIcons.OVERLAY_FRONT_ASSEMBLY_LINE_GLOW;
+import static gregtech.api.metatileentity.BaseTileEntity.TOOLTIP_DELAY;
 import static gregtech.api.util.GT_StructureUtility.buildHatchAdder;
 import static gregtech.api.util.GT_Utility.filterValidMTEs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -44,9 +50,10 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.github.bartimaeusnek.bartworks.API.modularUI.BW_UITextures;
+import com.github.bartimaeusnek.bartworks.API.recipe.BartWorksRecipeMaps;
 import com.github.bartimaeusnek.bartworks.system.material.CircuitGeneration.BW_Meta_Items;
 import com.github.bartimaeusnek.bartworks.system.material.CircuitGeneration.CircuitImprintLoader;
-import com.github.bartimaeusnek.bartworks.util.BWRecipes;
 import com.github.bartimaeusnek.bartworks.util.BW_Tooltip_Reference;
 import com.gtnewhorizon.structurelib.alignment.constructable.ISurvivalConstructable;
 import com.gtnewhorizon.structurelib.structure.IStructureDefinition;
@@ -54,11 +61,13 @@ import com.gtnewhorizon.structurelib.structure.ISurvivalBuildEnvironment;
 import com.gtnewhorizon.structurelib.structure.StructureDefinition;
 import com.gtnewhorizons.modularui.api.screen.ModularWindow;
 import com.gtnewhorizons.modularui.api.screen.UIBuildContext;
+import com.gtnewhorizons.modularui.common.widget.CycleButtonWidget;
 import com.gtnewhorizons.modularui.common.widget.FakeSyncWidget;
 
 import gregtech.api.GregTech_API;
 import gregtech.api.enums.SoundResource;
 import gregtech.api.enums.Textures;
+import gregtech.api.gui.modularui.GT_UITextures;
 import gregtech.api.interfaces.ITexture;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
@@ -67,7 +76,10 @@ import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_EnhancedMul
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch_Input;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch_InputBus;
+import gregtech.api.recipe.RecipeMap;
+import gregtech.api.recipe.RecipeMaps;
 import gregtech.api.recipe.check.CheckRecipeResult;
+import gregtech.api.recipe.check.CheckRecipeResultRegistry;
 import gregtech.api.recipe.check.SimpleCheckRecipeResult;
 import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GT_LanguageManager;
@@ -84,7 +96,16 @@ public class GT_TileEntity_CircuitAssemblyLine extends
 
     private static final String STRUCTURE_PIECE_FIRST = "first";
     private static final String STRUCTURE_PIECE_NEXT = "next";
+    private static final String STRUCTURE_PIECE_NEXT_HINT = "next_hint";
+    private static final String STRUCTURE_PIECE_LAST = "last";
 
+    private static final int MINIMUM_CIRCUIT_ASSEMBLER_LENGTH = 5;
+    protected static final String IMPRINT_KEY = "Type";
+    protected static final String LENGTH_KEY = "Length";
+    protected static final String RUNNING_MODE_KEY = "RunningMode";
+
+    private int length;
+    private int mode;
     private String imprintedItemName;
     private ItemStack imprintedStack;
 
@@ -96,6 +117,12 @@ public class GT_TileEntity_CircuitAssemblyLine extends
             .addShape(
                     STRUCTURE_PIECE_NEXT,
                     transpose(new String[][] { { "G", "G", "G" }, { "g", "l", "g" }, { "b", "I", "b" }, }))
+            .addShape(
+                    STRUCTURE_PIECE_NEXT_HINT,
+                    transpose(new String[][] { { "G", "G", "G" }, { "g", "l", "g" }, { "b", "i", "b" }, }))
+            .addShape(
+                    STRUCTURE_PIECE_LAST,
+                    transpose(new String[][] { { "G", "G", "G" }, { "g", "l", "g" }, { "b", "o", "b" }, }))
             .addElement(
                     'G',
                     buildHatchAdder(GT_TileEntity_CircuitAssemblyLine.class).atLeast(Energy).casingIndex(CASING_INDEX)
@@ -105,13 +132,15 @@ public class GT_TileEntity_CircuitAssemblyLine extends
             .addElement(
                     'b',
                     buildHatchAdder(GT_TileEntity_CircuitAssemblyLine.class).atLeast(InputHatch, Maintenance)
-                            .casingIndex(CASING_INDEX).dot(2).buildAndChain(GregTech_API.sBlockCasings2, 0))
-            .addElement('i', InputBus.newAny(CASING_INDEX, 3))
+                            .casingIndex(CASING_INDEX).dot(2).disallowOnly(ForgeDirection.EAST, ForgeDirection.WEST)
+                            .buildAndChain(GregTech_API.sBlockCasings2, 0))
+            .addElement('i', InputBus.newAny(CASING_INDEX, 3, ForgeDirection.DOWN))
             .addElement(
                     'I',
                     buildHatchAdder(GT_TileEntity_CircuitAssemblyLine.class).atLeast(InputHatch, InputBus, OutputBus)
-                            .casingIndex(CASING_INDEX).dot(2).buildAndChain(GregTech_API.sBlockCasings2, 0))
-            .build();
+                            .casingIndex(CASING_INDEX).dot(2).disallowOnly(ForgeDirection.EAST, ForgeDirection.WEST)
+                            .buildAndChain(GregTech_API.sBlockCasings2, 0))
+            .addElement('o', OutputBus.newAny(CASING_INDEX, 2, ForgeDirection.DOWN)).build();
 
     @Override
     public IStructureDefinition<GT_TileEntity_CircuitAssemblyLine> getStructureDefinition() {
@@ -121,12 +150,30 @@ public class GT_TileEntity_CircuitAssemblyLine extends
     @Override
     protected GT_Multiblock_Tooltip_Builder createTooltip() {
         GT_Multiblock_Tooltip_Builder tt = new GT_Multiblock_Tooltip_Builder();
-        tt.addMachineType("Circuit Assembler").addInfo("Controller block for the Circuit Assembly Line")
+        tt.addMachineType("Circuit Assembler/Circuit Assembly Line")
+                .addInfo("Controller block for the Circuit Assembly Line").addInfo("Change Mode with Screwdriver")
+                .addInfo("Does not lose efficiency when overclocked")
+                .addInfo(
+                        "---------" + EnumChatFormatting.WHITE
+                                + StatCollector.translateToLocal("chat.cal.mode.0")
+                                + EnumChatFormatting.GRAY
+                                + "--------")
                 .addInfo("Imprint this machine with a Circuit Imprint,")
                 .addInfo("by putting the imprint in the controller")
                 .addInfo("Every Circuit Assembly Line can only be imprinted ONCE")
-                .addInfo("Does not lose efficiency when overclocked").addInfo(BW_Tooltip_Reference.TT_BLUEPRINT)
-                .addSeparator().beginVariableStructureBlock(2, 7, 3, 3, 3, 3, false)
+                .addInfo(
+                        "---------" + EnumChatFormatting.WHITE
+                                + StatCollector.translateToLocal("chat.cal.mode.1")
+                                + EnumChatFormatting.GRAY
+                                + "--------")
+                .addInfo(
+                        "Does Circuit Assembler recipes, Minimum Length: " + EnumChatFormatting.RED
+                                + MINIMUM_CIRCUIT_ASSEMBLER_LENGTH
+                                + EnumChatFormatting.GRAY)
+                .addInfo("Recipe tier in Circuit Assembler mode is at most Energy Hatch tier - 1.")
+                .addInfo("This mode supports Crafting Input Buffer/Bus and allows bus separation").addInfo("")
+                .addSeparator().addInfo(BW_Tooltip_Reference.TT_BLUEPRINT)
+                .beginVariableStructureBlock(2, 7, 3, 3, 3, 3, false)
                 .addStructureInfo("From Bottom to Top, Left to Right")
                 .addStructureInfo(
                         "Layer 1 - Solid Steel Machine Casing, Input bus (Last Output bus), Solid Steel Machine Casing")
@@ -192,44 +239,83 @@ public class GT_TileEntity_CircuitAssemblyLine extends
 
     @Override
     public void loadNBTData(NBTTagCompound aNBT) {
-        this.type = aNBT.getCompoundTag("Type");
-        this.imprintedItemName = GT_LanguageManager
-                .getTranslateableItemStackName(ItemStack.loadItemStackFromNBT(this.type));
+        this.type = aNBT.getCompoundTag(IMPRINT_KEY);
+        this.imprintedItemName = this.type == null ? ""
+                : GT_LanguageManager.getTranslateableItemStackName(ItemStack.loadItemStackFromNBT(this.type));
+        mode = aNBT.getInteger(RUNNING_MODE_KEY);
+        length = aNBT.getInteger(LENGTH_KEY);
         super.loadNBTData(aNBT);
     }
 
     @Override
     public void setItemNBT(NBTTagCompound aNBT) {
-        if (!this.type.equals(new NBTTagCompound())) aNBT.setTag("Type", this.type);
+        if (!this.type.equals(new NBTTagCompound())) aNBT.setTag(IMPRINT_KEY, this.type);
+        aNBT.setInteger(RUNNING_MODE_KEY, mode);
+        aNBT.setInteger(LENGTH_KEY, length);
         super.saveNBTData(aNBT);
     }
 
     @Override
     public void saveNBTData(NBTTagCompound aNBT) {
-        if (!this.type.equals(new NBTTagCompound())) aNBT.setTag("Type", this.type);
+        if (!this.type.equals(new NBTTagCompound())) aNBT.setTag(IMPRINT_KEY, this.type);
+        aNBT.setInteger(RUNNING_MODE_KEY, mode);
+        aNBT.setInteger(LENGTH_KEY, length);
         super.saveNBTData(aNBT);
     }
 
     @Override
-    public GT_Recipe.GT_Recipe_Map getRecipeMap() {
-        return BWRecipes.instance.getMappingsFor((byte) 3);
+    public final void onScrewdriverRightClick(ForgeDirection side, EntityPlayer aPlayer, float aX, float aY, float aZ) {
+        if (getBaseMetaTileEntity().isServerSide()) {
+            this.mode = (this.mode + 1) % 2;
+            GT_Utility.sendChatToPlayer(aPlayer, StatCollector.translateToLocal("chat.cal.mode." + this.mode));
+        }
+        super.onScrewdriverRightClick(side, aPlayer, aX, aY, aZ);
+    }
+
+    @Override
+    public RecipeMap<?> getRecipeMap() {
+        if (this.mode == 0) return BartWorksRecipeMaps.circuitAssemblyLineRecipes;
+        return RecipeMaps.circuitAssemblerRecipes;
+    }
+
+    @Nonnull
+    @Override
+    public Collection<RecipeMap<?>> getAvailableRecipeMaps() {
+        return Arrays.asList(BartWorksRecipeMaps.circuitAssemblyLineRecipes, RecipeMaps.circuitAssemblerRecipes);
     }
 
     @Override
     protected ProcessingLogic createProcessingLogic() {
-        return new ProcessingLogic().enablePerfectOverclock();
+        return new ProcessingLogic() {
+
+            @Override
+            @Nonnull
+            protected CheckRecipeResult validateRecipe(@Nonnull GT_Recipe recipe) {
+                // limit CA mode recipes to hatch tier - 1
+                if (GT_TileEntity_CircuitAssemblyLine.this.mode == 1
+                        && recipe.mEUt > GT_TileEntity_CircuitAssemblyLine.this.getMaxInputVoltage() / 4) {
+                    return CheckRecipeResultRegistry.NO_RECIPE;
+                }
+                return CheckRecipeResultRegistry.SUCCESSFUL;
+            }
+        }.enablePerfectOverclock();
     }
 
     @NotNull
     @Override
     public CheckRecipeResult checkProcessing() {
-        if (this.type.equals(new NBTTagCompound()) && !this.imprintMachine(this.getControllerSlot()))
-            return SimpleCheckRecipeResult.ofFailure("no_imprint");
-        if (this.imprintedItemName == null || this.imprintedStack == null) {
-            this.imprintedStack = new ItemStack(BW_Meta_Items.getNEWCIRCUITS(), 1, 0);
-            this.imprintedStack.setTagCompound(this.type);
-            this.imprintedItemName = GT_LanguageManager.getTranslateableItemStackName(this.imprintedStack);
+        if (mode == 0) {
+            if (this.type.equals(new NBTTagCompound()) && !this.imprintMachine(this.getControllerSlot()))
+                return SimpleCheckRecipeResult.ofFailure("no_imprint");
+            if (this.imprintedItemName == null || this.imprintedStack == null) {
+                this.imprintedStack = new ItemStack(BW_Meta_Items.getNEWCIRCUITS(), 1, 0);
+                this.imprintedStack.setTagCompound(this.type);
+                this.imprintedItemName = GT_LanguageManager.getTranslateableItemStackName(this.imprintedStack);
+            }
+        } else if (length < MINIMUM_CIRCUIT_ASSEMBLER_LENGTH) {
+            return SimpleCheckRecipeResult.ofFailure("not_enough_length");
         }
+
         return super.checkProcessing();
     }
 
@@ -246,17 +332,21 @@ public class GT_TileEntity_CircuitAssemblyLine extends
 
     @Override
     public ArrayList<ItemStack> getStoredInputs() {
-        ArrayList<ItemStack> rList = new ArrayList<>();
-        for (GT_MetaTileEntity_Hatch_InputBus tHatch : filterValidMTEs(mInputBusses)) {
-            tHatch.mRecipeMap = this.getRecipeMap();
-            for (int i = 0; i < tHatch.getBaseMetaTileEntity().getSizeInventory(); i++) {
-                if (tHatch.getBaseMetaTileEntity().getStackInSlot(i) != null) {
-                    rList.add(tHatch.getBaseMetaTileEntity().getStackInSlot(i));
-                    break;
+        if (mode == 0) {
+            ArrayList<ItemStack> rList = new ArrayList<>();
+            for (GT_MetaTileEntity_Hatch_InputBus tHatch : filterValidMTEs(mInputBusses)) {
+                tHatch.mRecipeMap = this.getRecipeMap();
+                for (int i = 0; i < tHatch.getBaseMetaTileEntity().getSizeInventory(); i++) {
+                    if (tHatch.getBaseMetaTileEntity().getStackInSlot(i) != null) {
+                        rList.add(tHatch.getBaseMetaTileEntity().getStackInSlot(i));
+                        break;
+                    }
                 }
             }
+            return rList;
         }
-        return rList;
+
+        return super.getStoredInputs();
     }
 
     @Override
@@ -357,10 +447,12 @@ public class GT_TileEntity_CircuitAssemblyLine extends
     }
 
     private boolean checkMachine(boolean leftToRight) {
+
         for (int i = 1; i < 7; ++i) {
             if (!this.checkPiece(STRUCTURE_PIECE_NEXT, leftToRight ? -i : i, 0, 0)) {
                 return false;
             }
+            length = i + 1;
 
             if (!this.mOutputBusses.isEmpty()) {
                 return this.mEnergyHatches.size() == 1 && this.mMaintenanceHatches.size() == 1;
@@ -383,21 +475,38 @@ public class GT_TileEntity_CircuitAssemblyLine extends
     public int survivalConstruct(ItemStack stackSize, int elementBudget, ISurvivalBuildEnvironment env) {
         if (this.mMachine) return -1;
         int built;
-        built = this.survivialBuildPiece(STRUCTURE_PIECE_FIRST, stackSize, 0, 0, 0, elementBudget, env, false, true);
+        built = survivialBuildPiece(STRUCTURE_PIECE_FIRST, stackSize, 0, 0, 0, elementBudget, env, false, true);
         if (built >= 0) return built;
         int tLength = Math.min(stackSize.stackSize + 1, 7);
 
-        for (int i = 1; i < tLength; ++i) {
-            built = this
-                    .survivialBuildPiece(STRUCTURE_PIECE_NEXT, stackSize, -i, 0, 0, elementBudget, env, false, true);
+        for (int i = 1; i < tLength - 1; ++i) {
+            built = survivialBuildPiece(
+                    STRUCTURE_PIECE_NEXT_HINT,
+                    stackSize,
+                    -i,
+                    0,
+                    0,
+                    elementBudget,
+                    env,
+                    false,
+                    true);
             if (built >= 0) return built;
         }
-        return -1;
+        return survivialBuildPiece(
+                STRUCTURE_PIECE_LAST,
+                stackSize,
+                -(tLength - 1),
+                0,
+                0,
+                elementBudget,
+                env,
+                false,
+                true);
     }
 
     @Override
     public void addAdditionalTooltipInformation(ItemStack stack, List<String> tooltip) {
-        if (stack.hasTagCompound() && stack.stackTagCompound.hasKey("Type")) {
+        if (stack.hasTagCompound() && stack.stackTagCompound.hasKey(IMPRINT_KEY)) {
             tooltip.add(
                     StatCollector.translateToLocal("tooltip.cal.imprintedWith") + " "
                             + EnumChatFormatting.YELLOW
@@ -413,6 +522,16 @@ public class GT_TileEntity_CircuitAssemblyLine extends
         super.addUIWidgets(builder, buildContext);
         builder.widget(
                 new FakeSyncWidget.StringSyncer(() -> this.imprintedItemName, val -> this.imprintedItemName = val));
+        builder.widget(
+                new CycleButtonWidget().setToggle(() -> mode == 1, val -> mode = val ? 1 : 0)
+                        .setTextureGetter(
+                                state -> state == 1 ? BW_UITextures.OVERLAY_BUTTON_ASSEMBLER_MODE
+                                        : BW_UITextures.OVERLAY_BUTTON_LINE_MODE)
+                        .setBackground(GT_UITextures.BUTTON_STANDARD).setPos(80, 91).setSize(16, 16)
+                        .dynamicTooltip(
+                                () -> Collections
+                                        .singletonList(StatCollector.translateToLocal("chat.cal.mode." + mode)))
+                        .setUpdateTooltipEveryTick(true).setTooltipShowUpDelay(TOOLTIP_DELAY));
     }
 
     @Override
@@ -426,8 +545,39 @@ public class GT_TileEntity_CircuitAssemblyLine extends
     }
 
     @Override
+    public boolean onWireCutterRightClick(ForgeDirection side, ForgeDirection wrenchingSide, EntityPlayer aPlayer,
+            float aX, float aY, float aZ) {
+        if (!aPlayer.isSneaking()) {
+            if (mode == 0) return false;
+            inputSeparation = !inputSeparation;
+            GT_Utility.sendChatToPlayer(
+                    aPlayer,
+                    StatCollector.translateToLocal("GT5U.machines.separatebus") + " " + inputSeparation);
+            return true;
+        } else {
+            batchMode = !batchMode;
+            if (batchMode) {
+                GT_Utility.sendChatToPlayer(aPlayer, StatCollector.translateToLocal("misc.BatchModeTextOn"));
+            } else {
+                GT_Utility.sendChatToPlayer(aPlayer, StatCollector.translateToLocal("misc.BatchModeTextOff"));
+            }
+            return true;
+        }
+    }
+
+    @Override
+    public boolean supportsInputSeparation() {
+        return mode != 0;
+    }
+
+    @Override
+    public boolean isInputSeparationEnabled() {
+        return mode == 1 && super.isInputSeparationEnabled();
+    }
+
+    @Override
     public boolean isRecipeLockingEnabled() {
-        return this.imprintedItemName != null && !"".equals(this.imprintedItemName);
+        return this.mode == 0 && this.imprintedItemName != null && !"".equals(this.imprintedItemName);
     }
 
     @Override
@@ -435,7 +585,10 @@ public class GT_TileEntity_CircuitAssemblyLine extends
             IWailaConfigHandler config) {
         super.getWailaBody(itemStack, currenttip, accessor, config);
         NBTTagCompound tag = accessor.getNBTData();
-        if (tag.hasKey("ImprintedWith")) currenttip.add(
+        currenttip.add(
+                EnumChatFormatting.GREEN
+                        + StatCollector.translateToLocal("chat.cal.mode." + tag.getInteger(RUNNING_MODE_KEY)));
+        if (tag.hasKey("ImprintedWith") && tag.getInteger(RUNNING_MODE_KEY) == 0) currenttip.add(
                 StatCollector.translateToLocal("tooltip.cal.imprintedWith") + " "
                         + EnumChatFormatting.YELLOW
                         + tag.getString("ImprintedWith"));
@@ -448,10 +601,12 @@ public class GT_TileEntity_CircuitAssemblyLine extends
         super.getWailaNBTData(player, tile, tag, world, x, y, z);
         String imprintedWith = this.getTypeForDisplay();
         if (!imprintedWith.isEmpty()) tag.setString("ImprintedWith", imprintedWith);
+        tag.setInteger(RUNNING_MODE_KEY, mode);
     }
 
     @Override
     protected boolean supportsCraftingMEBuffer() {
-        return false;
+        return mode != 0;
     }
+
 }

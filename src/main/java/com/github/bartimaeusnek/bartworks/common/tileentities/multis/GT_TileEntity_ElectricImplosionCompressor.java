@@ -24,22 +24,26 @@ import static gregtech.api.util.GT_StructureUtility.buildHatchAdder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.StatCollector;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import com.github.bartimaeusnek.bartworks.API.recipe.BartWorksRecipeMaps;
 import com.github.bartimaeusnek.bartworks.MainMod;
 import com.github.bartimaeusnek.bartworks.client.renderer.BW_EICPistonVisualizer;
 import com.github.bartimaeusnek.bartworks.common.configs.ConfigHandler;
 import com.github.bartimaeusnek.bartworks.common.net.EICPacket;
-import com.github.bartimaeusnek.bartworks.util.BWRecipes;
 import com.github.bartimaeusnek.bartworks.util.Coords;
 import com.gtnewhorizon.structurelib.StructureLibAPI;
 import com.gtnewhorizon.structurelib.alignment.IAlignmentLimits;
@@ -65,6 +69,9 @@ import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.logic.ProcessingLogic;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_ExtendedPowerMultiBlockBase;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch;
+import gregtech.api.recipe.RecipeMap;
+import gregtech.api.recipe.check.CheckRecipeResult;
+import gregtech.api.recipe.check.CheckRecipeResultRegistry;
 import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GT_Multiblock_Tooltip_Builder;
 import gregtech.api.util.GT_OverclockCalculator;
@@ -254,13 +261,24 @@ public class GT_TileEntity_ElectricImplosionCompressor
     }
 
     @Override
-    public GT_Recipe.GT_Recipe_Map getRecipeMap() {
-        return BWRecipes.instance.eicMap;
+    public RecipeMap<?> getRecipeMap() {
+        return BartWorksRecipeMaps.electricImplosionCompressorRecipes;
     }
 
     @Override
     protected ProcessingLogic createProcessingLogic() {
         return new ProcessingLogic() {
+
+            @NotNull
+            @Override
+            protected CheckRecipeResult validateRecipe(@Nonnull GT_Recipe recipe) {
+                long voltage = GT_TileEntity_ElectricImplosionCompressor.this.getAverageInputVoltage();
+                // Only allow a minimum of T-1 energy hatch
+                if (recipe.mEUt > voltage * 4) {
+                    return CheckRecipeResultRegistry.insufficientPower(recipe.mEUt);
+                }
+                return CheckRecipeResultRegistry.SUCCESSFUL;
+            }
 
             @NotNull
             @Override
@@ -270,15 +288,6 @@ public class GT_TileEntity_ElectricImplosionCompressor
                         .setEUt(GT_TileEntity_ElectricImplosionCompressor.this.getMaxInputEu()).setAmperage(1);
             }
         }.setMaxParallelSupplier(() -> (int) Math.pow(4, Math.max(this.mBlockTier - 1, 0)));
-    }
-
-    @Override
-    protected void setProcessingLogicPower(ProcessingLogic logic) {
-        long amperage = this.getMaxInputAmps();
-        long voltage = this.getAverageInputVoltage();
-        // We allow one OC, if there is enough amperage, no matter which type of hatch is used
-        logic.setAvailableVoltage(amperage >= 4 ? voltage * 4 : voltage);
-        logic.setAvailableAmperage(amperage >= 4 ? amperage / 4 : amperage);
     }
 
     private void updateChunkCoordinates() {
@@ -482,6 +491,21 @@ public class GT_TileEntity_ElectricImplosionCompressor
     @Override
     public boolean supportsBatchMode() {
         return true;
+    }
+
+    @Override
+    public boolean onWireCutterRightClick(ForgeDirection side, ForgeDirection wrenchingSide, EntityPlayer aPlayer,
+            float aX, float aY, float aZ) {
+        if (aPlayer.isSneaking()) {
+            batchMode = !batchMode;
+            if (batchMode) {
+                GT_Utility.sendChatToPlayer(aPlayer, StatCollector.translateToLocal("misc.BatchModeTextOn"));
+            } else {
+                GT_Utility.sendChatToPlayer(aPlayer, StatCollector.translateToLocal("misc.BatchModeTextOff"));
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override

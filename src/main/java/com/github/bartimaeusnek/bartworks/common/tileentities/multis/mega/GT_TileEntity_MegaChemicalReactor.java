@@ -45,9 +45,10 @@ import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.logic.ProcessingLogic;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch;
+import gregtech.api.recipe.RecipeMap;
+import gregtech.api.recipe.RecipeMaps;
 import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GT_Multiblock_Tooltip_Builder;
-import gregtech.api.util.GT_Recipe;
 import gregtech.api.util.GT_Utility;
 
 public class GT_TileEntity_MegaChemicalReactor
@@ -108,8 +109,8 @@ public class GT_TileEntity_MegaChemicalReactor
     }
 
     @Override
-    public GT_Recipe.GT_Recipe_Map getRecipeMap() {
-        return GT_Recipe.GT_Recipe_Map.sMultiblockChemicalRecipes;
+    public RecipeMap<?> getRecipeMap() {
+        return RecipeMaps.multiblockChemicalReactorRecipes;
     }
 
     @Override
@@ -118,6 +119,14 @@ public class GT_TileEntity_MegaChemicalReactor
         if (!aNBT.hasKey(BATCH_MODE_NBT_KEY)) {
             this.batchMode = aNBT.getBoolean("mUseMultiparallelMode");
         }
+    }
+
+    @Override
+    public void onScrewdriverRightClick(ForgeDirection side, EntityPlayer aPlayer, float aX, float aY, float aZ) {
+        inputSeparation = !inputSeparation;
+        GT_Utility.sendChatToPlayer(
+                aPlayer,
+                StatCollector.translateToLocal("GT5U.machines.separatebus") + " " + inputSeparation);
     }
 
     @Override
@@ -161,11 +170,17 @@ public class GT_TileEntity_MegaChemicalReactor
         if (!this.checkPiece(STRUCTURE_PIECE_MAIN, 2, 2, 0) || this.mMaintenanceHatches.size() != 1) return false;
 
         if (this.glassTier < 8) {
-            for (GT_MetaTileEntity_Hatch hatch : this.mExoticEnergyHatches) {
+            for (int i = 0; i < this.mExoticEnergyHatches.size(); ++i) {
+                GT_MetaTileEntity_Hatch hatch = this.mExoticEnergyHatches.get(i);
                 if (hatch.getConnectionType() == GT_MetaTileEntity_Hatch.ConnectionType.LASER) {
                     return false;
                 }
                 if (this.glassTier < hatch.mTier) {
+                    return false;
+                }
+            }
+            for (int i = 0; i < this.mEnergyHatches.size(); ++i) {
+                if (this.glassTier < this.mEnergyHatches.get(i).mTier) {
                     return false;
                 }
             }
@@ -224,6 +239,11 @@ public class GT_TileEntity_MegaChemicalReactor
 
     @Override
     public boolean supportsVoidProtection() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsInputSeparation() {
         return true;
     }
 }

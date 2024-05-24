@@ -23,12 +23,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import cpw.mods.fml.relauncher.FMLInjectionData;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
-
 import net.minecraftforge.common.config.Configuration;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,7 +54,6 @@ import com.github.bartimaeusnek.bartworks.common.loaders.RecipeLoader;
 import com.github.bartimaeusnek.bartworks.common.loaders.RegisterServerCommands;
 import com.github.bartimaeusnek.bartworks.common.loaders.StaticRecipeChangeLoaders;
 import com.github.bartimaeusnek.bartworks.common.net.BW_Network;
-import com.github.bartimaeusnek.bartworks.neiHandler.IMCForNEI;
 import com.github.bartimaeusnek.bartworks.server.EventHandler.ServerEventHandler;
 import com.github.bartimaeusnek.bartworks.system.material.CircuitGeneration.CircuitImprintLoader;
 import com.github.bartimaeusnek.bartworks.system.material.CircuitGeneration.CircuitPartLoader;
@@ -66,6 +64,7 @@ import com.github.bartimaeusnek.bartworks.system.material.processingLoaders.Down
 import com.github.bartimaeusnek.bartworks.system.oredict.OreDictHandler;
 import com.github.bartimaeusnek.bartworks.util.ResultWrongSievert;
 import com.github.bartimaeusnek.bartworks.util.log.DebugLog;
+import com.github.bartimaeusnek.crossmod.galacticgreg.VoidMinerUtility;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
@@ -77,11 +76,12 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.IGuiHandler;
 import cpw.mods.fml.common.network.NetworkRegistry;
+import cpw.mods.fml.relauncher.FMLInjectionData;
 import gregtech.api.GregTech_API;
 import gregtech.api.enums.Mods;
+import gregtech.api.recipe.RecipeMap;
 import gregtech.api.recipe.check.CheckRecipeResultRegistry;
 import gregtech.api.util.GT_OreDictUnificator;
-import gregtech.api.util.GT_Recipe;
 
 @Mod(modid = MainMod.MOD_ID, name = MainMod.NAME, version = API_REFERENCE.VERSION, dependencies = """
         required-after:IC2;\
@@ -116,7 +116,8 @@ public final class MainMod {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent preinit) {
-        new ConfigHandler(new Configuration(new File(new File((File) FMLInjectionData.data()[6], "config"), "bartworks.cfg")));
+        new ConfigHandler(
+                new Configuration(new File(new File((File) FMLInjectionData.data()[6], "config"), "bartworks.cfg")));
         if (GTPlusPlus.isModLoaded()) {
             MainMod.LOGGER.info("Found GT++, continuing");
         }
@@ -159,7 +160,6 @@ public final class MainMod {
         WerkstoffLoader.runInit();
 
         ItemRegistry.run();
-        IMCForNEI.IMCSender();
     }
 
     @Mod.EventHandler
@@ -206,6 +206,7 @@ public final class MainMod {
 
         runOnServerStarted();
         StaticRecipeChangeLoaders.unificationRecipeEnforcer();
+        VoidMinerUtility.generateDropMaps();
     }
 
     private static boolean recipesAdded;
@@ -228,6 +229,6 @@ public final class MainMod {
         // StaticRecipeChangeLoaders.synchroniseCircuitUseMulti();
 
         // Accept recipe map changes into Buffers
-        GT_Recipe.GT_Recipe_Map.sMappings.forEach(GT_Recipe.GT_Recipe_Map::reInit);
+        RecipeMap.ALL_RECIPE_MAPS.values().forEach(map -> map.getBackend().reInit());
     }
 }

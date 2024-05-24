@@ -33,6 +33,7 @@ import java.util.HashSet;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -49,13 +50,13 @@ import net.minecraftforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
 import com.github.bartimaeusnek.bartworks.API.SideReference;
+import com.github.bartimaeusnek.bartworks.API.recipe.BartWorksRecipeMaps;
 import com.github.bartimaeusnek.bartworks.MainMod;
 import com.github.bartimaeusnek.bartworks.common.configs.ConfigHandler;
 import com.github.bartimaeusnek.bartworks.common.items.LabParts;
 import com.github.bartimaeusnek.bartworks.common.loaders.FluidLoader;
 import com.github.bartimaeusnek.bartworks.common.net.RendererPacket;
 import com.github.bartimaeusnek.bartworks.common.tileentities.tiered.GT_MetaTileEntity_RadioHatch;
-import com.github.bartimaeusnek.bartworks.util.BWRecipes;
 import com.github.bartimaeusnek.bartworks.util.BW_Util;
 import com.github.bartimaeusnek.bartworks.util.BioCulture;
 import com.github.bartimaeusnek.bartworks.util.Coords;
@@ -74,11 +75,14 @@ import gregtech.api.logic.ProcessingLogic;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_EnhancedMultiBlockBase;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch_Input;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch_Output;
+import gregtech.api.recipe.RecipeMap;
 import gregtech.api.recipe.check.CheckRecipeResult;
 import gregtech.api.recipe.check.CheckRecipeResultRegistry;
 import gregtech.api.render.TextureFactory;
 import gregtech.api.util.GT_Multiblock_Tooltip_Builder;
+import gregtech.api.util.GT_ParallelHelper;
 import gregtech.api.util.GT_Recipe;
+import gregtech.api.util.GT_Utility;
 
 public class GT_TileEntity_BioVat extends GT_MetaTileEntity_EnhancedMultiBlockBase<GT_TileEntity_BioVat> {
 
@@ -197,8 +201,8 @@ public class GT_TileEntity_BioVat extends GT_MetaTileEntity_EnhancedMultiBlockBa
     }
 
     @Override
-    public GT_Recipe.GT_Recipe_Map getRecipeMap() {
-        return BWRecipes.instance.getMappingsFor(BWRecipes.BACTERIALVATBYTE);
+    public RecipeMap<?> getRecipeMap() {
+        return BartWorksRecipeMaps.bacterialVatRecipes;
     }
 
     /**
@@ -255,24 +259,30 @@ public class GT_TileEntity_BioVat extends GT_MetaTileEntity_EnhancedMultiBlockBa
 
             @NotNull
             @Override
-            public CheckRecipeResult process() {
-                CheckRecipeResult result = super.process();
-                if (!result.wasSuccessful()) {
-                    return result;
-                }
-                // We already made sure the recipe runs. Now the vat looks for as many "parallels" as it can do
-                GT_TileEntity_BioVat.this.mExpectedMultiplier = GT_TileEntity_BioVat.this
-                        .getExpectedMultiplier(this.lastRecipe.getFluidOutput(0), true);
-                GT_TileEntity_BioVat.this.mTimes = 1;
-                for (int i = 1; i < GT_TileEntity_BioVat.this.mExpectedMultiplier; i++) {
-                    if (GT_TileEntity_BioVat.this.depleteInput(this.lastRecipe.mFluidInputs[0])) {
-                        GT_TileEntity_BioVat.this.mTimes++;
-                    }
-                }
-                this.outputFluids[0].amount *= GT_TileEntity_BioVat.this.mTimes;
-                return result;
+            protected GT_ParallelHelper createParallelHelper(@NotNull GT_Recipe recipe) {
+                return super.createParallelHelper(recipeWithMultiplier(recipe, inputFluids));
             }
         };
+    }
+
+    protected GT_Recipe recipeWithMultiplier(GT_Recipe recipe, FluidStack[] fluidInputs) {
+        GT_Recipe tRecipe = recipe.copy();
+        int multiplier = getExpectedMultiplier(recipe.getFluidOutput(0), true);
+        mExpectedMultiplier = multiplier;
+        // Calculate max multiplier limited by input fluids
+        long fluidAmount = 0;
+        for (FluidStack fluid : fluidInputs) {
+            if (recipe.mFluidInputs[0].isFluidEqual(fluid)) {
+                fluidAmount += fluid.amount;
+            }
+        }
+        multiplier = (int) Math.min(multiplier, fluidAmount / recipe.mFluidInputs[0].amount);
+        // In case multiplier is 0
+        multiplier = Math.max(multiplier, 1);
+        mTimes = multiplier;
+        tRecipe.mFluidInputs[0].amount *= multiplier;
+        tRecipe.mFluidOutputs[0].amount *= multiplier;
+        return tRecipe;
     }
 
     @Override
@@ -686,4 +696,20 @@ public class GT_TileEntity_BioVat extends GT_MetaTileEntity_EnhancedMultiBlockBa
     public boolean supportsBatchMode() {
         return true;
     }
+
+    @Override
+    public boolean onWireCutterRightClick(ForgeDirection side, ForgeDirection wrenchingSide, EntityPlayer aPlayer,
+            float aX, float aY, float aZ) {
+        if (aPlayer.isSneaking()) {
+            batchMode = !batchMode;
+            if (batchMode) {
+                GT_Utility.sendChatToPlayer(aPlayer, StatCollector.translateToLocal("misc.BatchModeTextOn"));
+            } else {
+                GT_Utility.sendChatToPlayer(aPlayer, StatCollector.translateToLocal("misc.BatchModeTextOff"));
+            }
+            return true;
+        }
+        return false;
+    }
+
 }

@@ -28,9 +28,11 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.oredict.ShapedOreRecipe;
 
+import com.github.bartimaeusnek.bartworks.API.recipe.BWNBTDependantCraftingRecipe;
+import com.github.bartimaeusnek.bartworks.API.recipe.BartWorksRecipeMaps;
+import com.github.bartimaeusnek.bartworks.ASM.BWCoreStaticReplacementMethodes;
 import com.github.bartimaeusnek.bartworks.common.configs.ConfigHandler;
 import com.github.bartimaeusnek.bartworks.system.material.WerkstoffLoader;
-import com.github.bartimaeusnek.bartworks.util.BWRecipes;
 import com.github.bartimaeusnek.bartworks.util.BW_Util;
 import com.github.bartimaeusnek.bartworks.util.Pair;
 import com.google.common.collect.ArrayListMultimap;
@@ -41,6 +43,7 @@ import cpw.mods.fml.common.registry.GameRegistry;
 import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.enums.OrePrefixes;
+import gregtech.api.recipe.RecipeMaps;
 import gregtech.api.util.GT_ModHandler;
 import gregtech.api.util.GT_OreDictUnificator;
 import gregtech.api.util.GT_Recipe;
@@ -73,45 +76,44 @@ public class CircuitImprintLoader {
     }
 
     private static void reAddOriginalRecipes() {
-        GT_Recipe.GT_Recipe_Map.sCircuitAssemblerRecipes.mRecipeList.removeAll(MODIFIED_CAL_RECIPES);
-        GT_Recipe.GT_Recipe_Map.sCircuitAssemblerRecipes.mRecipeList.addAll(ORIGINAL_CAL_RECIPES);
+        RecipeMaps.circuitAssemblerRecipes.getBackend().removeRecipes(MODIFIED_CAL_RECIPES);
+        ORIGINAL_CAL_RECIPES.forEach(RecipeMaps.circuitAssemblerRecipes::add);
         ORIGINAL_CAL_RECIPES.clear();
         MODIFIED_CAL_RECIPES.clear();
     }
 
     private static void rebuildCircuitAssemblerMap(HashSet<GT_Recipe> toRem, HashSet<GT_Recipe> toAdd) {
         reAddOriginalRecipes();
-        GT_Recipe.GT_Recipe_Map.sCircuitAssemblerRecipes.mRecipeList
+        RecipeMaps.circuitAssemblerRecipes.getAllRecipes()
                 .forEach(e -> CircuitImprintLoader.handleCircuitRecipeRebuilding(e, toRem, toAdd));
     }
 
     private static void handleCircuitRecipeRebuilding(GT_Recipe circuitRecipe, HashSet<GT_Recipe> toRem,
             HashSet<GT_Recipe> toAdd) {
-        ItemStack output = circuitRecipe.mOutputs[0];
-        if (output == null) return;
-        boolean isOrePass = isCircuitOreDict(output);
-        String unlocalizedName = output.getUnlocalizedName();
-        if (unlocalizedName == null) return;
-        if (!isOrePass && !unlocalizedName.contains("Circuit") && !unlocalizedName.contains("circuit")) return;
+        ItemStack[] outputs = circuitRecipe.mOutputs;
+        boolean isOrePass = isCircuitOreDict(outputs[0]);
+        String unlocalizedName = outputs[0].getUnlocalizedName();
+        if (isOrePass || unlocalizedName.contains("Circuit") || unlocalizedName.contains("circuit")) {
 
-        CircuitImprintLoader.recipeTagMap.put(CircuitImprintLoader.getTagFromStack(output), circuitRecipe.copy());
+            CircuitImprintLoader.recipeTagMap
+                    .put(CircuitImprintLoader.getTagFromStack(outputs[0]), circuitRecipe.copy());
 
-        Fluid solderIndalloy = FluidRegistry.getFluid("molten.indalloy140") != null
-                ? FluidRegistry.getFluid("molten.indalloy140")
-                : FluidRegistry.getFluid("molten.solderingalloy");
+            Fluid solderIndalloy = FluidRegistry.getFluid("molten.indalloy140") != null
+                    ? FluidRegistry.getFluid("molten.indalloy140")
+                    : FluidRegistry.getFluid("molten.solderingalloy");
 
-        Fluid solderUEV = FluidRegistry.getFluid("molten.mutatedlivingsolder") != null
-                ? FluidRegistry.getFluid("molten.mutatedlivingsolder")
-                : FluidRegistry.getFluid("molten.solderingalloy");
+            Fluid solderUEV = FluidRegistry.getFluid("molten.mutatedlivingsolder") != null
+                    ? FluidRegistry.getFluid("molten.mutatedlivingsolder")
+                    : FluidRegistry.getFluid("molten.solderingalloy");
 
-        if (circuitRecipe.mFluidInputs[0].isFluidEqual(Materials.SolderingAlloy.getMolten(0))
-                || circuitRecipe.mFluidInputs[0].isFluidEqual(new FluidStack(solderIndalloy, 0))
-                || circuitRecipe.mFluidInputs[0].isFluidEqual(new FluidStack(solderUEV, 0))) {
-            GT_Recipe newRecipe = CircuitImprintLoader.reBuildRecipe(circuitRecipe);
-            if (newRecipe != null)
-                BWRecipes.instance.getMappingsFor(BWRecipes.CIRCUITASSEMBLYLINE).addRecipe(newRecipe);
-            addCutoffRecipeToSets(toRem, toAdd, circuitRecipe);
-        } else if (circuitRecipe.mEUt > BW_Util.getTierVoltage(ConfigHandler.cutoffTier)) toRem.add(circuitRecipe);
+            if (circuitRecipe.mFluidInputs[0].isFluidEqual(Materials.SolderingAlloy.getMolten(0))
+                    || circuitRecipe.mFluidInputs[0].isFluidEqual(new FluidStack(solderIndalloy, 0))
+                    || circuitRecipe.mFluidInputs[0].isFluidEqual(new FluidStack(solderUEV, 0))) {
+                GT_Recipe newRecipe = CircuitImprintLoader.reBuildRecipe(circuitRecipe);
+                if (newRecipe != null) BartWorksRecipeMaps.circuitAssemblyLineRecipes.addRecipe(newRecipe);
+                addCutoffRecipeToSets(toRem, toAdd, circuitRecipe);
+            } else if (circuitRecipe.mEUt > BW_Util.getTierVoltage(ConfigHandler.cutoffTier)) toRem.add(circuitRecipe);
+        }
     }
 
     private static boolean isCircuitOreDict(ItemStack item) {
@@ -120,8 +122,8 @@ public class CircuitImprintLoader {
     }
 
     private static void exchangeRecipesInList(HashSet<GT_Recipe> toRem, HashSet<GT_Recipe> toAdd) {
-        GT_Recipe.GT_Recipe_Map.sCircuitAssemblerRecipes.mRecipeList.addAll(toAdd);
-        GT_Recipe.GT_Recipe_Map.sCircuitAssemblerRecipes.mRecipeList.removeAll(toRem);
+        toAdd.forEach(RecipeMaps.circuitAssemblerRecipes::add);
+        RecipeMaps.circuitAssemblerRecipes.getBackend().removeRecipes(toRem);
         ORIGINAL_CAL_RECIPES.addAll(toRem);
         MODIFIED_CAL_RECIPES.addAll(toAdd);
     }
@@ -168,7 +170,7 @@ public class CircuitImprintLoader {
             return null;
         }
 
-        return new BWRecipes.DynamicGTRecipe(
+        return new GT_Recipe(
                 false,
                 in,
                 new ItemStack[] { getOutputMultiplied(original) },
@@ -271,7 +273,8 @@ public class CircuitImprintLoader {
 
     private static void removeOldRecipesFromRegistries() {
         recipeWorldCache.forEach(CraftingManager.getInstance().getRecipeList()::remove);
-        gtrecipeWorldCache.forEach(GT_Recipe.GT_Recipe_Map.sSlicerRecipes.mRecipeList::remove);
+        BWCoreStaticReplacementMethodes.clearRecentlyUsedRecipes();
+        RecipeMaps.slicerRecipes.getBackend().removeRecipes(gtrecipeWorldCache);
         recipeWorldCache.forEach(r -> {
             try {
                 BW_Util.getGTBufferedRecipeList().remove(r);
@@ -300,7 +303,7 @@ public class CircuitImprintLoader {
                                                 && OreDictionary.getOreIDs(stack).length > 0
                                                         ? OreDictionary.getOreIDs(stack)[0]
                                                         : -1))));
-        GT_Recipe slicingRecipe = new BWRecipes.DynamicGTRecipe(
+        GT_Recipe slicingRecipe = new GT_Recipe(
                 true,
                 new ItemStack[] { stack, ItemList.Shape_Slicer_Flat.get(0) },
                 new ItemStack[] { BW_Meta_Items.getNEWCIRCUITS().getStackWithNBT(tag, 1, 1) },
@@ -312,7 +315,7 @@ public class CircuitImprintLoader {
                 eut,
                 BW_Util.CLEANROOM);
         gtrecipeWorldCache.add(slicingRecipe);
-        GT_Recipe.GT_Recipe_Map.sSlicerRecipes.add(slicingRecipe);
+        RecipeMaps.slicerRecipes.add(slicingRecipe);
     }
 
     private static void makeAndAddCraftingRecipes(NBTTagCompound tag) {
@@ -321,7 +324,7 @@ public class CircuitImprintLoader {
                 'G', WerkstoffLoader.Prasiolite.get(OrePrefixes.gemExquisite, 1), 'X',
                 BW_Meta_Items.getNEWCIRCUITS().getStack(3) };
 
-        IRecipe bwrecipe = new BWRecipes.BWNBTDependantCraftingRecipe(circuit, imprintRecipe);
+        IRecipe bwrecipe = new BWNBTDependantCraftingRecipe(circuit, imprintRecipe);
         ShapedOreRecipe gtrecipe = BW_Util.createGTCraftingRecipe(
                 circuit,
                 GT_ModHandler.RecipeBits.DO_NOT_CHECK_FOR_COLLISIONS | GT_ModHandler.RecipeBits.KEEPNBT
@@ -347,7 +350,7 @@ public class CircuitImprintLoader {
     }
 
     private static void deleteCALRecipesAndTags() {
-        BWRecipes.instance.getMappingsFor(BWRecipes.CIRCUITASSEMBLYLINE).mRecipeList.clear();
+        BartWorksRecipeMaps.circuitAssemblyLineRecipes.getBackend().clearRecipes();
         recipeTagMap.clear();
     }
 }

@@ -1,6 +1,7 @@
 package com.github.bartimaeusnek.bartworks.common.loaders;
 
 import static gregtech.api.enums.GT_Values.M;
+import static gregtech.api.enums.Mods.Avaritia;
 import static gregtech.api.enums.Mods.EternalSingularity;
 import static gregtech.api.enums.Mods.GoodGenerator;
 import static gregtech.api.enums.Mods.OpenComputers;
@@ -11,7 +12,7 @@ import static gregtech.api.util.GT_ModHandler.getModItem;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
-import com.github.bartimaeusnek.bartworks.util.BWRecipes;
+import com.github.bartimaeusnek.bartworks.API.recipe.BartWorksRecipeMaps;
 
 import gregtech.api.enums.GT_Values;
 import gregtech.api.enums.ItemList;
@@ -26,7 +27,7 @@ public class ElectricImplosionCompressorRecipes implements Runnable {
     private static void addElectricImplosionRecipe(final ItemStack[] inputItems, final FluidStack[] inputFluids,
             final ItemStack[] outputItems, final FluidStack[] outputFluids, final int durationInTicks,
             final int EUPerTick) {
-        BWRecipes.instance.eicMap.addRecipe(
+        BartWorksRecipeMaps.electricImplosionCompressorRecipes.addRecipe(
                 false,
                 inputItems,
                 outputItems,
@@ -122,6 +123,43 @@ public class ElectricImplosionCompressorRecipes implements Runnable {
                 20 * 4,
                 (int) TierEU.RECIPE_UXV);
 
+        // Infinity Catalyst
+        addElectricImplosionRecipe(
+                // IN.
+                new ItemStack[] { GT_OreDictUnificator.get(OrePrefixes.dust, Materials.InfinityCatalyst, 64L), },
+                new FluidStack[] { GT_Values.NF },
+                // OUT.
+                new ItemStack[] { getModItem(Avaritia.ID, "Resource", 1L, 5) },
+                new FluidStack[] { GT_Values.NF },
+                // Recipe stats.
+                1 * 1,
+                (int) TierEU.RECIPE_UIV);
+
+        if (UniversalSingularities.isModLoaded()) {
+            // Fluxed Singularity
+            addElectricImplosionRecipe(
+                    // IN.
+                    new ItemStack[] { GT_OreDictUnificator.get(OrePrefixes.block, Materials.ElectrumFlux, 16L), },
+                    new FluidStack[] { GT_Values.NF },
+                    // OUT.
+                    new ItemStack[] { getModItem(UniversalSingularities.ID, "universal.general.singularity", 1L, 20) },
+                    new FluidStack[] { GT_Values.NF },
+                    // Recipe stats.
+                    1 * 1,
+                    (int) TierEU.RECIPE_UIV);
+
+            // Iron Singularity
+            addElectricImplosionRecipe(
+                    // IN.
+                    new ItemStack[] { GT_Values.NI },
+                    new FluidStack[] { Materials.Iron.getMolten(7296 * 9 * 144L) },
+                    // OUT.
+                    new ItemStack[] { getModItem(Avaritia.ID, "Singularity", 1L, 0) },
+                    new FluidStack[] { GT_Values.NF },
+                    // Recipe stats.
+                    1 * 1,
+                    (int) TierEU.RECIPE_UIV);
+        }
         // MHDCSM V2
         addElectricImplosionRecipe(
                 // IN.

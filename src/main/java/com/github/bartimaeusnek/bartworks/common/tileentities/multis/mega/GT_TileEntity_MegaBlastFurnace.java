@@ -59,6 +59,8 @@ import gregtech.api.logic.ProcessingLogic;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch_Muffler;
 import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_Hatch_Output;
+import gregtech.api.recipe.RecipeMap;
+import gregtech.api.recipe.RecipeMaps;
 import gregtech.api.recipe.check.CheckRecipeResult;
 import gregtech.api.recipe.check.CheckRecipeResultRegistry;
 import gregtech.api.render.TextureFactory;
@@ -171,9 +173,9 @@ public class GT_TileEntity_MegaBlastFurnace extends GT_TileEntity_MegaMultiBlock
         tt.addMachineType("Blast Furnace").addInfo("Controller block for the Mega Blast Furnace")
                 .addInfo("You can use some fluids to reduce recipe time. Place the circuit in the Input Bus")
                 .addInfo("Each 900K over the min. Heat required reduces power consumption by 5% (multiplicatively)")
-                .addInfo("Each 1800K over the min. Heat required grants one perfect overclock")
+                .addInfo("Each 1800K over the min. Heat allows for an overclock to be upgraded to a perfect overclock.")
                 .addInfo(
-                        "For each perfect overclock the EBF will reduce recipe time 4 times (instead of 2) (100% efficiency)")
+                        "That means the EBF will reduce recipe time by a factor 4 instead of 2 (giving 100% efficiency).")
                 .addInfo("Additionally gives +100K for every tier past MV")
                 .addPollutionAmount(20 * this.getPollutionPerTick(null)).addSeparator()
                 .beginStructureBlock(15, 20, 15, true).addController("3rd layer center")
@@ -278,7 +280,7 @@ public class GT_TileEntity_MegaBlastFurnace extends GT_TileEntity_MegaMultiBlock
             @Override
             protected GT_OverclockCalculator createOverclockCalculator(@Nonnull GT_Recipe recipe) {
                 return super.createOverclockCalculator(recipe).setRecipeHeat(recipe.mSpecialValue)
-                        .setMultiHeat(GT_TileEntity_MegaBlastFurnace.this.mHeatingCapacity).setHeatOC(true)
+                        .setMachineHeat(GT_TileEntity_MegaBlastFurnace.this.mHeatingCapacity).setHeatOC(true)
                         .setHeatDiscount(true);
             }
 
@@ -342,7 +344,7 @@ public class GT_TileEntity_MegaBlastFurnace extends GT_TileEntity_MegaMultiBlock
                 pollutionReduction = 100 - tHatch.calculatePollutionReduction(100);
                 break;
             }
-            tLiquid.amount = tLiquid.amount * (pollutionReduction + 5) / 100;
+            tLiquid.amount = tLiquid.amount * pollutionReduction / 100;
         } else {
             tOutputHatches = this.mOutputHatches;
         }
@@ -363,11 +365,17 @@ public class GT_TileEntity_MegaBlastFurnace extends GT_TileEntity_MegaMultiBlock
             return false;
 
         if (this.glassTier < 8) {
-            for (GT_MetaTileEntity_Hatch hatch : this.mExoticEnergyHatches) {
+            for (int i = 0; i < this.mExoticEnergyHatches.size(); ++i) {
+                GT_MetaTileEntity_Hatch hatch = this.mExoticEnergyHatches.get(i);
                 if (hatch.getConnectionType() == GT_MetaTileEntity_Hatch.ConnectionType.LASER) {
                     return false;
                 }
                 if (this.glassTier < hatch.mTier) {
+                    return false;
+                }
+            }
+            for (int i = 0; i < this.mEnergyHatches.size(); ++i) {
+                if (this.glassTier < this.mEnergyHatches.get(i).mTier) {
                     return false;
                 }
             }
@@ -379,8 +387,13 @@ public class GT_TileEntity_MegaBlastFurnace extends GT_TileEntity_MegaMultiBlock
     }
 
     @Override
-    public GT_Recipe.GT_Recipe_Map getRecipeMap() {
-        return GT_Recipe.GT_Recipe_Map.sBlastRecipes;
+    public RecipeMap<?> getRecipeMap() {
+        return RecipeMaps.blastFurnaceRecipes;
+    }
+
+    @Override
+    public int getRecipeCatalystPriority() {
+        return -2;
     }
 
     @Override
