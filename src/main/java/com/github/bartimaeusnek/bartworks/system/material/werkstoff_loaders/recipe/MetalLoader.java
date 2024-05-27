@@ -42,7 +42,8 @@ public class MetalLoader implements IWerkstoffRunnable {
             GT_Values.RA.stdBuilder().itemInputs(werkstoff.get(ingot, 9), ItemList.Shape_Mold_Block.get(0L))
                     .itemOutputs(werkstoff.get(block)).duration((int) (werkstoff.getStats().getMass() / 2))
                     .eut(4 * werkstoff.getStats().getMeltingPoint() >= 2800 ? 60 : 15)
-                    .recipeCategory(RecipeCategories.alloySmelterMolding).addTo(RecipeMaps.alloySmelterRecipes);
+                    //.recipeCategory(RecipeCategories.alloySmelterMolding)
+                    .addTo(RecipeMaps.alloySmelterRecipes);
         }
     }
 }

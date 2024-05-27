@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.StatCollector;
 
@@ -31,6 +33,7 @@ public class BacterialVatFrontend extends RecipeMapFrontend {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     protected List<String> handleNEIItemInputTooltip(List<String> currentTip,
             GT_NEI_DefaultHandler.FixedPositionedStack pStack) {
         if (pStack.isFluid()) {
@@ -41,6 +44,7 @@ public class BacterialVatFrontend extends RecipeMapFrontend {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     protected List<String> handleNEIItemOutputTooltip(List<String> currentTip,
             GT_NEI_DefaultHandler.FixedPositionedStack pStack) {
         if (pStack.isFluid()) {
@@ -51,15 +55,18 @@ public class BacterialVatFrontend extends RecipeMapFrontend {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     protected void drawNEIOverlayForInput(GT_NEI_DefaultHandler.FixedPositionedStack stack) {
         drawFluidOverlay(stack);
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     protected void drawNEIOverlayForOutput(GT_NEI_DefaultHandler.FixedPositionedStack stack) {
         drawFluidOverlay(stack);
     }
 
+    @SideOnly(Side.CLIENT)
     private void drawFluidOverlay(GT_NEI_DefaultHandler.FixedPositionedStack stack) {
         if (stack.isFluid()) {
             drawNEIOverlayText(

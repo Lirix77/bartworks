@@ -211,7 +211,8 @@ public class CellLoader implements IWerkstoffRunnable {
 
             GT_Values.RA.stdBuilder().itemInputs(werkstoff.get(dust)).fluidOutputs(werkstoff.getFluidOrGas(1000))
                     .duration(werkstoff.getStats().getMass()).eut(werkstoff.getStats().getMass() > 128 ? 64 : 30)
-                    .recipeCategory(RecipeCategories.fluidExtractorRecycling).addTo(fluidExtractionRecipes);
+                    //.recipeCategory(RecipeCategories.fluidExtractorRecycling)
+                    .addTo(fluidExtractionRecipes);
 
             GT_Values.RA.stdBuilder().itemInputs(GT_Utility.getIntegratedCircuit(1)).itemOutputs(werkstoff.get(dust))
                     .fluidInputs(werkstoff.getFluidOrGas(1000)).duration((int) werkstoff.getStats().getMass())

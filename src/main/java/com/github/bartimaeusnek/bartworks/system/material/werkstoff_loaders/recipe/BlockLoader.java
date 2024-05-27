@@ -43,7 +43,8 @@ public class BlockLoader implements IWerkstoffRunnable {
         if (werkstoff.hasItemType(cellMolten)) {
 
             GT_Values.RA.stdBuilder().itemInputs(werkstoff.get(block)).fluidOutputs(werkstoff.getMolten(1296))
-                    .recipeCategory(RecipeCategories.fluidExtractorRecycling).duration(14 * SECONDS + 8 * TICKS).eut(8)
+                    //.recipeCategory(RecipeCategories.fluidExtractorRecycling)
+                    .duration(14 * SECONDS + 8 * TICKS).eut(8)
                     .addTo(fluidExtractionRecipes);
 
         }
