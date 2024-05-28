@@ -29,7 +29,7 @@ import vexatos.tgregworks.reference.Config;
 public class MaterialsInjector {
 
     public static final String NAME = "BartWorks Mod Additions - TGregworks Container";
-    public static final String VERSION = API_REFERENCE.VERSION;
+    public static final String VERSION = "0.8.12";
     public static final String MOD_ID = "bartworkscrossmodtgregworkscontainer";
 
     @Mod.EventHandler
