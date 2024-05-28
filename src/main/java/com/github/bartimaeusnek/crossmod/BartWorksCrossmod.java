@@ -53,7 +53,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 public class BartWorksCrossmod {
 
     public static final String NAME = "BartWorks Mod Additions";
-    public static final String VERSION = API_REFERENCE.VERSION;
+    public static final String VERSION = "0.8.12";
     public static final String MOD_ID = "bartworkscrossmod";
     public static final Logger LOGGER = LogManager.getLogger(BartWorksCrossmod.NAME);
 

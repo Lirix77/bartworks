@@ -83,7 +83,7 @@ import gregtech.api.recipe.RecipeMap;
 import gregtech.api.recipe.check.CheckRecipeResultRegistry;
 import gregtech.api.util.GT_OreDictUnificator;
 
-@Mod(modid = MainMod.MOD_ID, name = MainMod.NAME, version = API_REFERENCE.VERSION, dependencies = """
+@Mod(modid = MainMod.MOD_ID, name = MainMod.NAME, version = "0.8.12", dependencies = """
         required-after:IC2;\
         required-after:gregtech;\
         after:berriespp;\
